@@ -1,5 +1,29 @@
 import os
 
+import subprocess
+from folder_paths import models_dir, folder_names_and_paths, add_model_folder_path, get_folder_paths, get_filename_list, get_full_path
+
+# Define the directory for CLIPSeg models
+clipseg_dir = os.path.join(models_dir, "clipseg")
+
+# Ensure the CLIPSeg directory is registered in the paths
+try:
+    if clipseg_dir not in get_folder_paths("clipseg"):
+        raise KeyError
+except KeyError:
+    add_model_folder_path("clipseg", clipseg_dir)
+
+# Check if the clipseg_dir exists and is empty
+if not os.path.exists(clipseg_dir) or not os.listdir(clipseg_dir):
+    # Ensure the directory exists before cloning
+    os.makedirs(clipseg_dir, exist_ok=True)
+    # Clone the repository into clipseg_dir
+    subprocess.run(["git", "clone", "https://huggingface.co/CIDAS/clipseg-rd64-refined", clipseg_dir], check=True)
+    print(f"Cloned CLIPSeg model to {clipseg_dir}")
+else:
+    print(f"[ComfyUI CLIPSeg] CLIPSEG model found")
+
+
 from transformers import CLIPSegProcessor, CLIPSegForImageSegmentation
 
 from PIL import Image
