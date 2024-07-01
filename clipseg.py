@@ -12,19 +12,33 @@ try:
 except KeyError:
     add_model_folder_path("clipseg", clipseg_dir)
 
+# Function to check if Git LFS is installed
+def check_git_lfs_installed():
+    try:
+        subprocess.run(["git", "lfs", "--version"], check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+        return True
+    except subprocess.CalledProcessError:
+        return False
+
 # Check if the clipseg_dir exists and is empty
 if not os.path.exists(clipseg_dir) or not os.listdir(clipseg_dir):
     # Ensure the directory exists before cloning
     os.makedirs(clipseg_dir, exist_ok=True)
-    
-    # Clone the repository into clipseg_dir
-    subprocess.run(["git", "clone", "https://huggingface.co/CIDAS/clipseg-rd64-refined", clipseg_dir], check=True)
-    print(f"Cloned CLIPSeg model to {clipseg_dir}")
 
-    # Initialize Git LFS and pull LFS files
-    subprocess.run(["git", "lfs", "install"], check=True, cwd=clipseg_dir)
-    subprocess.run(["git", "lfs", "pull"], check=True, cwd=clipseg_dir)
-    print(f"Pulled LFS files to {clipseg_dir}")
+    if not check_git_lfs_installed():
+        raise EnvironmentError("Git LFS is not installed. Please install Git LFS from https://git-lfs.github.com/")
+
+    # Clone the repository into clipseg_dir
+    try:
+        subprocess.run(["git", "clone", "https://huggingface.co/CIDAS/clipseg-rd64-refined", clipseg_dir], check=True)
+        print(f"Cloned CLIPSeg model to {clipseg_dir}")
+
+        # Initialize Git LFS and pull LFS files
+        subprocess.run(["git", "lfs", "install"], check=True, cwd=clipseg_dir)
+        subprocess.run(["git", "lfs", "pull"], check=True, cwd=clipseg_dir)
+        print(f"Pulled LFS files to {clipseg_dir}")
+    except subprocess.CalledProcessError as e:
+        print(f"Git command failed: {e}")
 else:
     print(f"[ComfyUI CLIPSeg] CLIPSEG model found")
 
