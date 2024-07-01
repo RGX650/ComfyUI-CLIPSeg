@@ -1,5 +1,4 @@
 import os
-
 import subprocess
 from folder_paths import models_dir, folder_names_and_paths, add_model_folder_path, get_folder_paths, get_filename_list, get_full_path
 
@@ -17,9 +16,15 @@ except KeyError:
 if not os.path.exists(clipseg_dir) or not os.listdir(clipseg_dir):
     # Ensure the directory exists before cloning
     os.makedirs(clipseg_dir, exist_ok=True)
+    
     # Clone the repository into clipseg_dir
     subprocess.run(["git", "clone", "https://huggingface.co/CIDAS/clipseg-rd64-refined", clipseg_dir], check=True)
     print(f"Cloned CLIPSeg model to {clipseg_dir}")
+
+    # Initialize Git LFS and pull LFS files
+    subprocess.run(["git", "lfs", "install"], check=True, cwd=clipseg_dir)
+    subprocess.run(["git", "lfs", "pull"], check=True, cwd=clipseg_dir)
+    print(f"Pulled LFS files to {clipseg_dir}")
 else:
     print(f"[ComfyUI CLIPSeg] CLIPSEG model found")
 
