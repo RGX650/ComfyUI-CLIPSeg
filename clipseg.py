@@ -154,13 +154,6 @@ class CLIPSeg:
         Returns:
             Tuple[torch.Tensor, torch.Tensor, torch.Tensor]: The segmentation mask, the heatmap mask, and the binarized mask.
         """
-            
-        # Convert the Tensor to a PIL image
-        #image_np = image.numpy().squeeze()  # Remove the first dimension (batch size of 1)
-        # Convert the numpy array back to the original range (0-255) and data type (uint8)
-        #image_np = (image_np * 255).astype(np.uint8)
-        # Create a PIL image from the numpy array
-        #i = Image.fromarray(image_np, mode="RGB")
 
         # Convert the Tensor to a PIL image
         image_np = tensor_to_numpy(image)
@@ -168,31 +161,20 @@ class CLIPSeg:
         i = Image.fromarray(image_np, mode="RGB")
 
 
-        # 优化后代码  
-        # 获取当前文件所在的目录路径
         current_dir = os.path.dirname(__file__)
-
-        # 构建模型路径的相对路径
         path_to_clipseg_model = os.path.join(current_dir, '../../models/clipseg')
 
-        # 使用离线模式加载模型和分词器
         processor = CLIPSegProcessor.from_pretrained(path_to_clipseg_model, local_files_only=True)
         model = CLIPSegForImageSegmentation.from_pretrained(path_to_clipseg_model, local_files_only=True)
-
-       # 优化后代码  
                
         prompt = text
-        
-        #input_prc = processor(text=prompt, images=i, padding="max_length", return_tensors="pt")
         input_prc = processor(text=prompt, images=[i], return_tensors="pt")
          
-        # 优化后代码
         with torch.no_grad():
             outputs = model(**input_prc)
         preds = outputs.logits.unsqueeze(1)
         tensor = torch.sigmoid(preds[0][0])  # get the mask
-       # 优化后代码  
-                
+
         # Apply a threshold to the original tensor to cut off low values
         thresh = threshold
         tensor_thresholded = torch.where(tensor > thresh, tensor, torch.tensor(0, dtype=torch.float))
