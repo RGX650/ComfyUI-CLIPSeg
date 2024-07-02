@@ -156,9 +156,14 @@ class CLIPSeg:
         """
             
         # Convert the Tensor to a PIL image
-        image_np = image.numpy().squeeze()  # Remove the first dimension (batch size of 1)
+        #image_np = image.numpy().squeeze()  # Remove the first dimension (batch size of 1)
         # Convert the numpy array back to the original range (0-255) and data type (uint8)
-        image_np = (image_np * 255).astype(np.uint8)
+        #image_np = (image_np * 255).astype(np.uint8)
+        # Create a PIL image from the numpy array
+        #i = Image.fromarray(image_np, mode="RGB")
+
+        # Convert the Tensor to a PIL image
+        image_np = tensor_to_numpy(image)
         # Create a PIL image from the numpy array
         i = Image.fromarray(image_np, mode="RGB")
 
@@ -178,7 +183,8 @@ class CLIPSeg:
                
         prompt = text
         
-        input_prc = processor(text=prompt, images=i, padding="max_length", return_tensors="pt")
+        #input_prc = processor(text=prompt, images=i, padding="max_length", return_tensors="pt")
+        input_prc = processor(text=prompt, images=[i], return_tensors="pt")
          
         # 优化后代码
         with torch.no_grad():
